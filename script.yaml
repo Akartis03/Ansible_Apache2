@@ -1,0 +1,29 @@
+---
+- name: Configuration Apache2
+  hosts: servers
+  become: true
+  tasks:
+    - name: Installation d'Apache2
+      apt:
+        name: apache2
+        state: present
+
+    - name: Configuration des sites
+      template:
+        src: templates/site.conf.j2
+        dest: /etc/apache2/sites-available/MySite.conf
+      notify:
+        - Enable site
+
+  handlers:
+    - name: Enable site
+      command: a2ensite MySite.conf
+      args:
+        chdir: /etc/apache2/sites-available
+      notify:
+        - Restart Apache
+
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted
